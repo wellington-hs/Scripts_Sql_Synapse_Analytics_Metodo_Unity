@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "- Criado um pool de SQL Dedicado e exibido arquivo que esta no silver \"NeobankClientDataBricks.csv\" em uma tabela externa\n",
 		"folder": {
-			"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+			"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 		},
 		"content": {
 			"query": "/* P3_M9 - Pratica Smart 2\nEstes Scripts são para criar uma tabela externa do arquivo 'NeobankClientsDatabricks.csv' salvo no data Lake \ncaminho: 'https://saneobank.blob.core.windows.net/silver'\npelo Databriks e executado pelo pool de SQL DEDICADO \"Syndp_neobankpoc\" */\n\n-- O nome do arquivo foi alterado para facilitar a didatica, o nome original havia muitos zeros",

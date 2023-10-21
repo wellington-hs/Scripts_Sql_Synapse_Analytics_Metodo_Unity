@@ -1,0 +1,20 @@
+{
+	"name": "0 - INFO_SCRIPTS_stp5_poc",
+	"properties": {
+		"folder": {
+			"name": "Stp5 - Scripts Tabela Fisica Databricks P3_da POC"
+		},
+		"content": {
+			"query": "/* STEP 5 DA POC\n\nAqui é feito (criado) uma tabela física no pool de SQL Dedicado chamada: 'clientNeoBank', \ne feito o carregamento dos dados para essa tabela.\nlocal do arquivo da SA: 'saneobank/silver/NeoBank_Modelling/NeobankClientsDatabricks.csv'\n\n*/",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "syndp_neobankpoc",
+				"poolName": "syndp_neobankpoc"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

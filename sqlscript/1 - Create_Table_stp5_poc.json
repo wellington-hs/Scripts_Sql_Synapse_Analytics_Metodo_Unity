@@ -1,9 +1,9 @@
 {
-	"name": "SQL Create Table",
+	"name": "1 - Create_Table_stp5_poc",
 	"properties": {
 		"description": "Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL",
 		"folder": {
-			"name": "Script Tabela Fisica Databricks P3_da POC"
+			"name": "Stp5 - Scripts Tabela Fisica Databricks P3_da POC"
 		},
 		"content": {
 			"query": "/*Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL */\n\nCREATE TABLE clientNeoBank (\n\tRowNumber VARCHAR(100),\n\tCustomerId VARCHAR(100),\n\tSurname VARCHAR(100),\n\tCreditScore VARCHAR(100),\n\tGeography VARCHAR(100),\n\tGender VARCHAR(100),\n\tAge VARCHAR(100),\n\tTenure VARCHAR(100),\n\tBalance VARCHAR(100),\n\tNumOfProducts VARCHAR(100),\n\tHasCrCard VARCHAR(100),\n\tIsActiveMember VARCHAR(100),\n\tEstimatedSalary VARCHAR(100),\n\tExited VARCHAR(100)\n\n)\nWITH (\n    DISTRIBUTION = HASH (CustomerId), -- a distribuição é HASH\n    CLUSTERED COLUMNSTORE INDEX  -- o indice é COLUMNSTORE\n)",

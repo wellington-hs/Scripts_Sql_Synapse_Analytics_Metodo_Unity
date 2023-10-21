@@ -2,7 +2,7 @@
 	"name": "3 - DataSource_Neobank_DBricks_stp4_poc",
 	"properties": {
 		"folder": {
-			"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+			"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 		},
 		"content": {
 			"query": "CREATE EXTERNAL DATA SOURCE ContainerSaneobank  --crie um acesso externo ao datasource (container silver)\n\nWITH(\nLOCATION = 'https://saneobank.blob.core.windows.net/silver',  --endereço do container\nCREDENTIAL = CredencialSaNeoBank  -- nome da credencial criada no script 2-Credencials_NeobanK_DBricks\n\n)\n",

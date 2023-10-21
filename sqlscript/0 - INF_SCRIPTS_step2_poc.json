@@ -1,5 +1,5 @@
 {
-	"name": "0 - INF_SCRIPTS_STEP2_POC",
+	"name": "0 - INF_SCRIPTS_step2_poc",
 	"properties": {
 		"description": "2) - Criar tabela externas no Pool serverless usando polybase para apontar para os arquivos que estao no data lake",
 		"folder": {

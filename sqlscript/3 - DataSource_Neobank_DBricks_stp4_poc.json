@@ -1,5 +1,5 @@
 {
-	"name": "3 - DataSource_Neobank_DBricks",
+	"name": "3 - DataSource_Neobank_DBricks_stp4_poc",
 	"properties": {
 		"folder": {
 			"name": "Scripts Tabela Externa DataBricks Neobank"

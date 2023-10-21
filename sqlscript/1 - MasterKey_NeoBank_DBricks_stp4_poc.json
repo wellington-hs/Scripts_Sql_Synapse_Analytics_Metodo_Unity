@@ -1,5 +1,5 @@
 {
-	"name": "1 - MasterKey_NeoBank_DBricks",
+	"name": "1 - MasterKey_NeoBank_DBricks_stp4_poc",
 	"properties": {
 		"description": "Esse script cria a master key para o banco de dados dedicado do prejeto 3 Neo Bank. DataBricks",
 		"folder": {

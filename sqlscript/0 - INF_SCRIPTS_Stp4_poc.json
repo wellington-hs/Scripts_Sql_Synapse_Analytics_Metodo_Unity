@@ -1,6 +1,7 @@
 {
-	"name": "INFO",
+	"name": "0 - INF_SCRIPTS_Stp4_poc",
 	"properties": {
+		"description": "- Criado um pool de SQL Dedicado e exibido arquivo que esta no silver \"NeobankClientDataBricks.csv\" em uma tabela externa\n",
 		"folder": {
 			"name": "Scripts Tabela Externa DataBricks Neobank"
 		},

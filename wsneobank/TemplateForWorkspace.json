@@ -515,7 +515,7 @@
 					"name": "101 - Banco de Dados do Lake"
 				},
 				"content": {
-					"query": "/* Pratica Smart, fazendo um select em um arquivo do data Lake\n*/\n\n-- Não Faz parte da POC\n\nSELECT TOP (100) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [DataBaseDoDataLake].[dbo].[tblClientes]",
+					"query": "/* Pratica Smart (Prática Smart 3: Conexão com dados no ASA), fazendo um select em um arquivo do data Lake\n*/\n\n-- Não Faz parte da POC\n\nSELECT TOP (100) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [DataBaseDoDataLake].[dbo].[tblClientes]",
 					"metadata": {
 						"language": "sql"
 					},

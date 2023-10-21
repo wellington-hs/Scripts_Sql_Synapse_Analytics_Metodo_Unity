@@ -1,0 +1,893 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Nome do Workspace",
+			"defaultValue": "wsneobank"
+		},
+		"wsneobank-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'wsneobank-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:wsneobank.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"wsneobank-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://saneobank.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/wsneobank-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('wsneobank-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/wsneobank-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('wsneobank-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/1 - MasterKey_NeoBank_DBricks')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Esse script cria a master key para o banco de dados dedicado do prejeto 3 Neo Bank. DataBricks",
+				"folder": {
+					"name": "Scripts Tabela Externa DataBricks Neobank"
+				},
+				"content": {
+					"query": "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'JGldsku4546SDpudxqp56'\n\n-- cria marter key para o banco dedicado",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/2 - Credentials_NeoBank_DBricks')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts Tabela Externa DataBricks Neobank"
+				},
+				"content": {
+					"query": "CREATE DATABASE SCOPED CREDENTIAL CredencialSaNeoBank\n\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\nSECRET = 'sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-12-31T20:28:57Z&st=2023-06-27T12:28:57Z&spr=https,http&sig=ujo3vS%2BpeSohrz6SVUw1U5cT51xm9%2BY0W9dD9F3S7kM%3D'\n\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/3 - DataSource_Neobank_DBricks')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts Tabela Externa DataBricks Neobank"
+				},
+				"content": {
+					"query": "CREATE EXTERNAL DATA SOURCE ContainerSaneobank  --crie um acesso externo ao datasource (container silver)\n\nWITH(\nLOCATION = 'https://saneobank.blob.core.windows.net/silver',  --endereço do container\nCREDENTIAL = CredencialSaNeoBank  -- nome da credencial criada no script 2-Credencials_NeobanK_DBricks\n\n)\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/4 - FileFormat_NeoBank_DBricks')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts Tabela Externa DataBricks Neobank"
+				},
+				"content": {
+					"query": "CREATE EXTERNAL FILE FORMAT formato_csv --nome do script\n\nWITH(\n    FORMAT_TYPE = DELIMITEDTEXT,\n    FORMAT_OPTIONS(\n        FIELD_TERMINATOR = ',',\n        STRING_DELIMITER = '\"',\n        FIRST_ROW = 1,\n        USE_TYPE_DEFAULT = TRUE\n\n    )\n\n)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Carregamento manual')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake para uma tabela fisica do pool de SQL dedicado",
+				"folder": {
+					"name": "Script Tabela Fisica Databricks P3_da POC"
+				},
+				"content": {
+					"query": "/*Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake\n para uma tabela fisica do pool de SQL dedicado */\n\nCOPY INTO dbo.clientNeoBank (\nRowNumber,\nCustomerId,\nSurname,\nCreditScore,\nGeography,\nGender,\nAge,\nTenure,\nBalance,\nNumOfProducts,\nHasCrCard,\nIsActiveMember,\nEstimatedSalary,\nExited\n)\nFROM 'https://saneobank.blob.core.windows.net/silver/NeoBank_Modelling/NeobankClientsDatabricks.csv' \n\nWITH\n (\n FILE_TYPE = 'CSV',\n FIRSTROW = 2,\n FIELDTERMINATOR =  ',',\n -- as credenciais só são necessarias quando o carregamento vem de outro Storage account\n --CREDENTIAL = (IDENTITY = 'Storage Account Key', SECRET = 'Exemplo de chave_bnGt5m0CeJQ+ASt0gpWVA==')  --usado o acces key da SA\n \n)\nGO\n\nSELECT * FROM dbo.clientNeoBank",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/External Table - Complete')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts Tabela Externa DataBricks Neobank"
+				},
+				"content": {
+					"query": "\n-- Este script é feito automaticamente pelo SA ao encontrar o arquivo no Hub de DATA / Linked e com o botão direito gerar tabela externa\n-- Foi modificado apenas  os nomes das colunas que ele não identificou automaticamente\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t STRING_DELIMITER = '\"',\n\t\t\t FIRST_ROW = 2,\n\t\t\t USE_TYPE_DEFAULT = TRUE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'silver_saneobank_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [silver_saneobank_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://silver@saneobank.dfs.core.windows.net', \n\t\tTYPE = HADOOP \n\t)\nGO\n\nCREATE EXTERNAL TABLE dbo.extClientNeoBank (\n\tRowNumber VARCHAR(100),\n\tCustumerID VARCHAR(100),\n\tSurname VARCHAR(100),\n\tCreditScore VARCHAR(100),\n\tGeography VARCHAR(100),\n\tGender VARCHAR(100),\n\tAge VARCHAR(100),\n\tTenure VARCHAR(100),\n\tBalance VARCHAR(100),\n\tNumOfProducts VARCHAR(100),\n\tHasCrCard VARCHAR(100),\n\tIsActiveMember VARCHAR(100),\n\tEstimatedSalary VARCHAR(100),\n\tExited VARCHAR(100)\n\t)\n\tWITH (\n\tLOCATION = 'NeoBank_Modelling/NeobankClientsDatabricks.csv',\n\tDATA_SOURCE = [silver_saneobank_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.extClientNeoBank\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/INFO')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts Tabela Externa DataBricks Neobank"
+				},
+				"content": {
+					"query": "/* P3_M9 - Pratica Smart 2\nEstes Scripts são para criar uma tabela externa do arquivo 'NeobankClientsDatabricks.csv' salvo no data Lake \ncaminho: 'https://saneobank.blob.core.windows.net/silver'\npelo Databriks e executado pelo pool de SQL DEDICADO \"Syndp_neobankpoc\" */\n\n-- O nome do arquivo foi alterado para facilitar a didatica, o nome original havia muitos zeros",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/INF_SCRIPTS')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": " \n -- Aula P3_M5_A4 - (Projeto-3, Modulo 5, Aula 4. - Prática Smart 1: Criando seu primeiro Banco de Dados no Pool de Sql sem serviço + Master Key)\n\n/*\nINTENÇÃO: Fazer uma tabela externa de um arquivo do Data Lake\nEsses Scripts são para Fazer a conexão do banco  'bdsrvssNeoBank' com a Storage Account 'saneobank' que esta no Data Lake\nComo a SA não é/está publico, precisamos passar as credenciais, e essas credenciais são passadas por scripts separados cada um com uma função\n\n* Master Key ------------ cria uma criptografia para passar as credenciais do Lake\n* Credencial_NeoBank ---- Script onde é setado as credenciais do Lake\n* DS_Neobank ------------ Data source. Script que seta o caminho do arquivo que esta no Lake\n* FileFormat_NeoBank ---- Script que define qual é o formato do arquivo do Lake\n* External Table -------- Script onde é feito a tabela externa que desejamos.\n\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Master Key')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": "-- Aula P3_M5_A4  -  (Projeto-3, Modulo 5, Aula 4. - Prática Smart 1: Criando seu primeiro Banco de Dados no Pool de Sql sem serviço + Master Key)\n\n--Para criar uma chave mestra para criptografar a chave do SAS\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'Hsydbrs4156efshsdfv'\n\n\n/*Para verificar se criou a chave usar o scrip abaixo:*/\n\n--SELECT * FROM sys.symmetric_keys",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL Create Table')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL",
+				"folder": {
+					"name": "Script Tabela Fisica Databricks P3_da POC"
+				},
+				"content": {
+					"query": "/*Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL */\n\nCREATE TABLE clientNeoBank (\n\tRowNumber VARCHAR(100),\n\tCustomerId VARCHAR(100),\n\tSurname VARCHAR(100),\n\tCreditScore VARCHAR(100),\n\tGeography VARCHAR(100),\n\tGender VARCHAR(100),\n\tAge VARCHAR(100),\n\tTenure VARCHAR(100),\n\tBalance VARCHAR(100),\n\tNumOfProducts VARCHAR(100),\n\tHasCrCard VARCHAR(100),\n\tIsActiveMember VARCHAR(100),\n\tEstimatedSalary VARCHAR(100),\n\tExited VARCHAR(100)\n\n)\nWITH (\n    DISTRIBUTION = HASH (CustomerId), -- a distribuição é HASH\n    CLUSTERED COLUMNSTORE INDEX  -- o indice é COLUMNSTORE\n)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL ExternalTable_NeoBank_Clients')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": "\n-- aqui é criado uma tabela externa na mão, definindo o nome da tabela, os campos os tipos de dados e tudo que há no campo WITH.\n\nCREATE EXTERNAL TABLE extNeoBankClient(\nRowNumber INT,\nCustomerId INT,\nSurname VARCHAR(100),\nCreditScore VARCHAR(100),\nGeography VARCHAR(100),\nGender VARCHAR(100),\nAge VARCHAR(100),\nTenure VARCHAR(100),\nBalance VARCHAR(100),\nNumOfProducts VARCHAR(100),\nHasCrCard VARCHAR(100),\nIsActiveMember VARCHAR(100),\nEstimatedSalary VARCHAR(100),\nExited VARCHAR(100)\n)\nWITH(\n    LOCATION = 'NeoBank_Modelling.csv',\n    DATA_SOURCE = DS_NEOBANKbronze,\n    FILE_FORMAT = formato_CSV\n)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP 10 *  FROM [dbo].[extNeoBankClient]\nWHERE Geography = 'France'",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (100) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [dbo].[extNeoBankClient]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL_Credential_NeoBank')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": "-- Aula P3_M5_A4  -  (Projeto-3, Modulo 5, Aula 5. - Prática Smart 2: Criando / Configurando as Credenciais no Banco de Dados\n\n\n/*  Credenciais para acessar o Data Lake   */\n\nCREATE DATABASE SCOPED CREDENTIAL CredentialsDataLake  --Definir um nome para o escopo\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',  --string obrigatória, não mudar\nSECRET = 'sp=r&st=2023-10-18T22:34:09Z&se=2023-10-19T06:34:09Z&spr=https&sv=2022-11-02&sr=c&sig=%2B4zweAgwUErDAZTSnlTzMo%2FcWjL09IMBpRqoY0W90Ok%3D';  -- credencial\nGO\n\n/*obs.: o Identity, é como se fosse o nome do usuario. No DataLake, \né chamado genericamente de SHARED ACCESS SIGNATURE*/\n\n\n/*\nALTER DATABASE SCOPED CREDENTIAL CredentialsDataLake\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\nSECRET = 'nova credencial';\nGO\n*/\n\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL_DS_NeoBank')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": "\n--Acessando o SA por https\n\nCREATE EXTERNAL DATA SOURCE DS_NEOBANKbronze\nWITH (\n\tLOCATION = 'https://saneobank.blob.core.windows.net/bronze',\n\tCREDENTIAL = CredentialsDataLake\n)\n\n\n--Acessando por ABFS\n\n/*\nCREATE EXTERNAL DATA SOURCE DS_NEOBANKbronze_abfs\nWITH ( \n    LOCATION = 'abfss://bronze@saneobank.dfs.core.windows.net/', \n    CREDENTIAL = CredentialsDataLake\n    \n  ) ;\nGO\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL_FileFormat_NeoBank')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": "/*   Criar o formato CSV para depois criar a Table External */\n-- DELIMITEDTEXT - indica que o arquivo é csv\n\nCREATE EXTERNAL FILE FORMAT formato_CSV  --nome do recurso dado\nWITH (\n    FORMAT_TYPE = DELIMITEDTEXT,  -- campo do tipo delimitado. o csv é do tipo delimitado\n      FORMAT_OPTIONS(\n          FIELD_TERMINATOR = ',',   --campo delimitador neste arquivo é a virgula\n          STRING_DELIMITER = '\"',   --delimitador de string\n          FIRST_ROW = 2,        -- ele começa na 2ª linha pois a primeira é cabeçalho no DataLake\n          USE_TYPE_DEFAULT = True  --aqui caso no campo não tenha nada ele vai mostrar o valor padrão tipo se for int e nao tiver nada ele mostra “0”.\n          )\n)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/X - Select top 10')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+				},
+				"content": {
+					"query": "SELECT TOP (10) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [dbo].[extNeoBankClient]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/select 100 linhas')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Banco de Dados do Lake"
+				},
+				"content": {
+					"query": "SELECT TOP (100) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [DataBaseDoDataLake].[dbo].[tblClientes]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "DataBaseDoDataLake",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/selectPoolSemServicoPadrao')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "1 - Selects Modulo4 - Pool SQL Sem Servico"
+				},
+				"content": {
+					"query": "-- Prática Smart 1 : Pool de SQL sem serviço (Criar e codar no Pool serveless)\n-- Esta é uma consulta de um arquivo csv externo publico diponibilizado no data lake da microsoft, utilizando o SQL interno sem serviço com o BD padrao \"master\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\n\n\n\n    ",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/selectSvrssNeoBank')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "1 - Selects Modulo4 - Pool SQL Sem Servico"
+				},
+				"content": {
+					"query": "\n -- Esta é uma consulta de um arquivo csv externo publico, utilizando o SQL interno sem serviço \n -- com o BD SERVERLESS criado posteriormente chamado \"bdsrvssNeoBank\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\nwhere geo_id = 'BR'\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bdsrvssNeoBank",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DataBaseDoDataLake')]",
+			"type": "Microsoft.Synapse/workspaces/databases",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"Ddls": [
+					{
+						"ActionType": "CREATE",
+						"OldEntity": null,
+						"NewEntity": {
+							"Name": "DataBaseDoDataLake",
+							"EntityType": "DATABASE",
+							"Origin": {
+								"Type": "SPARK"
+							},
+							"Properties": {
+								"IsSyMSCDMDatabase": true
+							},
+							"Source": {
+								"Provider": "ADLS",
+								"Location": "abfss://fswsneobankpoc@saneobank.dfs.core.windows.net/diretorioWS",
+								"Properties": {
+									"FormatType": "csv",
+									"LinkedServiceName": "wsneobank-WorkspaceDefaultStorage"
+								}
+							},
+							"PublishStatus": "PUBLISHED",
+							"ObjectVersion": 4,
+							"ObjectId": "9a761f98-cc53-4339-8b77-74cac0c71f57"
+						},
+						"Source": {
+							"Type": "SPARK"
+						}
+					},
+					{
+						"ActionType": "CREATE",
+						"OldEntity": null,
+						"NewEntity": {
+							"Name": "tblClientes",
+							"EntityType": "TABLE",
+							"TableType": "EXTERNAL",
+							"Namespace": {
+								"SchemaName": null,
+								"DatabaseName": "DataBaseDoDataLake",
+								"DatabaseId": null
+							},
+							"StorageDescriptor": {
+								"Distribution": null,
+								"Columns": [
+									{
+										"Name": "RowNumber",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "CustomerId",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "Surname",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "CreditScore",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "Geography",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "Gender",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "Age",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "Tenure",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "Balance",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "NumOfProducts",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "HasCrCard",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "IsActiveMember",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									},
+									{
+										"Name": "EstimatedSalary",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "Exited",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									}
+								],
+								"ColumnSetEntityName": "bcee07fc-0a8c-4d2c-a81a-555d23d45959",
+								"Format": {
+									"InputFormat": "org.apache.hadoop.mapred.SequenceFileInputFormat",
+									"OutputFormat": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+									"FormatType": "csv",
+									"SerializeLib": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
+									"Properties": {
+										"path": "abfss://fswsneobankpoc@saneobank.dfs.core.windows.net/diretorioWS/NeoBank_Modelling.csv",
+										"delimiter": ",",
+										"firstRowAsHeader": "true",
+										"multiLine": "false",
+										"serialization.format": "1",
+										"FormatTypeSetToDatabaseDefault": false,
+										"header": "true"
+									}
+								},
+								"Source": {
+									"Provider": "ADLS",
+									"Location": "abfss://fswsneobankpoc@saneobank.dfs.core.windows.net/diretorioWS/NeoBank_Modelling.csv",
+									"Properties": {
+										"LinkedServiceName": "wsneobank-WorkspaceDefaultStorage",
+										"LocationSetToDatabaseDefault": false
+									}
+								},
+								"Properties": {
+									"textinputformat.record.delimiter": ",",
+									"compression": "{\"type\":\"None\",\"level\":\"optimal\"}",
+									"derivedModelAttributeInfo": "{\"attributeReferences\":{}}"
+								},
+								"Compressed": false,
+								"SerDeInfo": null,
+								"IsStoredAsSubdirectories": false
+							},
+							"Owner": null,
+							"CreateTime": 0,
+							"LastAccessTime": 0,
+							"Retention": 0,
+							"Temporary": false,
+							"IsRewriteEnabled": false,
+							"ViewOriginalText": null,
+							"ViewExpandedText": null,
+							"Origin": {
+								"Type": "SPARK"
+							},
+							"OriginObjectId": null,
+							"IsSharedEntity": false,
+							"PublishStatus": "PUBLISHED",
+							"Properties": {
+								"Description": "",
+								"DisplayFolderInfo": "{\"name\":\"Others\",\"colorCode\":\"\"}",
+								"PrimaryKeys": "",
+								"spark.sql.sources.provider": "csv",
+								"spark.sql.sources.schema.numParts": "1",
+								"spark.sql.sources.schema.part.0": "{\"type\":\"struct\",\"fields\":[{\"name\":\"RowNumber\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"CustomerId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Surname\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"CreditScore\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Geography\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Gender\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Age\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Tenure\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Balance\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"NumOfProducts\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"HasCrCard\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"IsActiveMember\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"EstimatedSalary\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"Exited\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]}"
+							},
+							"ObjectVersion": 2,
+							"ObjectId": "d5b11601-1243-4818-abab-95df4c6ed42a",
+							"Description": ""
+						},
+						"Source": {
+							"Type": "SPARK"
+						}
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/syndp_neobankpoc')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus"
+		}
+	]
+}

@@ -1,0 +1,20 @@
+{
+	"name": "SQL_FileFormat_NeoBank",
+	"properties": {
+		"folder": {
+			"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+		},
+		"content": {
+			"query": "/*   Criar o formato CSV para depois criar a Table External */\n-- DELIMITEDTEXT - indica que o arquivo é csv\n\nCREATE EXTERNAL FILE FORMAT formato_CSV  --nome do recurso dado\nWITH (\n    FORMAT_TYPE = DELIMITEDTEXT,  -- campo do tipo delimitado. o csv é do tipo delimitado\n      FORMAT_OPTIONS(\n          FIELD_TERMINATOR = ',',   --campo delimitador neste arquivo é a virgula\n          STRING_DELIMITER = '\"',   --delimitador de string\n          FIRST_ROW = 2,        -- ele começa na 2ª linha pois a primeira é cabeçalho no DataLake\n          USE_TYPE_DEFAULT = True  --aqui caso no campo não tenha nada ele vai mostrar o valor padrão tipo se for int e nao tiver nada ele mostra “0”.\n          )\n)",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "bdsrvssNeoBank",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

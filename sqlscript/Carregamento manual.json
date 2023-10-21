@@ -1,0 +1,21 @@
+{
+	"name": "Carregamento manual",
+	"properties": {
+		"description": "Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake para uma tabela fisica do pool de SQL dedicado",
+		"folder": {
+			"name": "Script Tabela Fisica Databricks P3_da POC"
+		},
+		"content": {
+			"query": "/*Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake\n para uma tabela fisica do pool de SQL dedicado */\n\nCOPY INTO dbo.clientNeoBank (\nRowNumber,\nCustomerId,\nSurname,\nCreditScore,\nGeography,\nGender,\nAge,\nTenure,\nBalance,\nNumOfProducts,\nHasCrCard,\nIsActiveMember,\nEstimatedSalary,\nExited\n)\nFROM 'https://saneobank.blob.core.windows.net/silver/NeoBank_Modelling/NeobankClientsDatabricks.csv' \n\nWITH\n (\n FILE_TYPE = 'CSV',\n FIRSTROW = 2,\n FIELDTERMINATOR =  ',',\n -- as credenciais só são necessarias quando o carregamento vem de outro Storage account\n --CREDENTIAL = (IDENTITY = 'Storage Account Key', SECRET = 'Exemplo de chave_bnGt5m0CeJQ+ASt0gpWVA==')  --usado o acces key da SA\n \n)\nGO\n\nSELECT * FROM dbo.clientNeoBank",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "syndp_neobankpoc",
+				"poolName": "syndp_neobankpoc"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

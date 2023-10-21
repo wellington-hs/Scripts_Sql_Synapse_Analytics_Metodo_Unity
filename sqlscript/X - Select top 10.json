@@ -1,0 +1,20 @@
+{
+	"name": "X - Select top 10",
+	"properties": {
+		"folder": {
+			"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+		},
+		"content": {
+			"query": "SELECT TOP (10) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [dbo].[extNeoBankClient]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "bdsrvssNeoBank",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"name": "DataBaseDoDataLake",
+	"properties": {
+		"Name": "DataBaseDoDataLake",
+		"EntityType": "DATABASE",
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"Properties": {
+			"IsSyMSCDMDatabase": true
+		},
+		"Source": {
+			"Provider": "ADLS",
+			"Location": "abfss://fswsneobankpoc@saneobank.dfs.core.windows.net/diretorioWS",
+			"Properties": {
+				"FormatType": "csv",
+				"LinkedServiceName": "wsneobank-WorkspaceDefaultStorage"
+			}
+		},
+		"PublishStatus": "PUBLISHED",
+		"ObjectVersion": 4,
+		"ObjectId": "9a761f98-cc53-4339-8b77-74cac0c71f57"
+	},
+	"type": "DATABASE"
+}

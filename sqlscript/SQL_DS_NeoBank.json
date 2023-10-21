@@ -1,0 +1,20 @@
+{
+	"name": "SQL_DS_NeoBank",
+	"properties": {
+		"folder": {
+			"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+		},
+		"content": {
+			"query": "\n--Acessando o SA por https\n\nCREATE EXTERNAL DATA SOURCE DS_NEOBANKbronze\nWITH (\n\tLOCATION = 'https://saneobank.blob.core.windows.net/bronze',\n\tCREDENTIAL = CredentialsDataLake\n)\n\n\n--Acessando por ABFS\n\n/*\nCREATE EXTERNAL DATA SOURCE DS_NEOBANKbronze_abfs\nWITH ( \n    LOCATION = 'abfss://bronze@saneobank.dfs.core.windows.net/', \n    CREDENTIAL = CredentialsDataLake\n    \n  ) ;\nGO\n*/",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "bdsrvssNeoBank",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

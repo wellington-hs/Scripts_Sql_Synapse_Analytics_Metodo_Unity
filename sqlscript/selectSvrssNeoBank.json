@@ -1,0 +1,20 @@
+{
+	"name": "selectSvrssNeoBank",
+	"properties": {
+		"folder": {
+			"name": "1 - Selects Modulo4 - Pool SQL Sem Servico"
+		},
+		"content": {
+			"query": "\n -- Esta é uma consulta de um arquivo csv externo publico, utilizando o SQL interno sem serviço \n -- com o BD SERVERLESS criado posteriormente chamado \"bdsrvssNeoBank\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\nwhere geo_id = 'BR'\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "bdsrvssNeoBank",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

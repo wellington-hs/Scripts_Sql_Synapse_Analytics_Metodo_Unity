@@ -1,0 +1,20 @@
+{
+	"name": "Master Key",
+	"properties": {
+		"folder": {
+			"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+		},
+		"content": {
+			"query": "-- Aula P3_M5_A4  -  (Projeto-3, Modulo 5, Aula 4. - Prática Smart 1: Criando seu primeiro Banco de Dados no Pool de Sql sem serviço + Master Key)\n\n--Para criar uma chave mestra para criptografar a chave do SAS\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'Hsydbrs4156efshsdfv'\n\n\n/*Para verificar se criou a chave usar o scrip abaixo:*/\n\n--SELECT * FROM sys.symmetric_keys",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "bdsrvssNeoBank",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -512,10 +512,10 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"folder": {
-					"name": "Banco de Dados do Lake"
+					"name": "101 - Banco de Dados do Lake"
 				},
 				"content": {
-					"query": "SELECT TOP (100) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [DataBaseDoDataLake].[dbo].[tblClientes]",
+					"query": "/* Pratica Smart, fazendo um select em um arquivo do data Lake\n*/\n\n-- Não Faz parte da POC\n\nSELECT TOP (100) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [DataBaseDoDataLake].[dbo].[tblClientes]",
 					"metadata": {
 						"language": "sql"
 					},

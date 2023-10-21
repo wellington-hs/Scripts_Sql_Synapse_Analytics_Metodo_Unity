@@ -94,13 +94,36 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/0 - INFO_SCRIPTS_stp5_poc')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Stp5 - Scripts Tabela Fisica Databricks P3_da POC"
+				},
+				"content": {
+					"query": "/* STEP 5 DA POC\n\nAqui é feito (criado) uma tabela física no pool de SQL Dedicado chamada: 'clientNeoBank', \ne feito o carregamento dos dados para essa tabela.\nlocal do arquivo da SA: 'saneobank/silver/NeoBank_Modelling/NeobankClientsDatabricks.csv'\n\n*/",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/0 - INF_SCRIPTS_Stp4_poc')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"description": "- Criado um pool de SQL Dedicado e exibido arquivo que esta no silver \"NeobankClientDataBricks.csv\" em uma tabela externa\n",
 				"folder": {
-					"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+					"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 				},
 				"content": {
 					"query": "/* P3_M9 - Pratica Smart 2\nEstes Scripts são para criar uma tabela externa do arquivo 'NeobankClientsDatabricks.csv' salvo no data Lake \ncaminho: 'https://saneobank.blob.core.windows.net/silver'\npelo Databriks e executado pelo pool de SQL DEDICADO \"Syndp_neobankpoc\" */\n\n-- O nome do arquivo foi alterado para facilitar a didatica, o nome original havia muitos zeros",
@@ -142,13 +165,37 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/1 - Create_Table_stp5_poc')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL",
+				"folder": {
+					"name": "Stp5 - Scripts Tabela Fisica Databricks P3_da POC"
+				},
+				"content": {
+					"query": "/*Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL */\n\nCREATE TABLE clientNeoBank (\n\tRowNumber VARCHAR(100),\n\tCustomerId VARCHAR(100),\n\tSurname VARCHAR(100),\n\tCreditScore VARCHAR(100),\n\tGeography VARCHAR(100),\n\tGender VARCHAR(100),\n\tAge VARCHAR(100),\n\tTenure VARCHAR(100),\n\tBalance VARCHAR(100),\n\tNumOfProducts VARCHAR(100),\n\tHasCrCard VARCHAR(100),\n\tIsActiveMember VARCHAR(100),\n\tEstimatedSalary VARCHAR(100),\n\tExited VARCHAR(100)\n\n)\nWITH (\n    DISTRIBUTION = HASH (CustomerId), -- a distribuição é HASH\n    CLUSTERED COLUMNSTORE INDEX  -- o indice é COLUMNSTORE\n)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/1 - MasterKey_NeoBank_DBricks_stp4_poc')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"description": "Esse script cria a master key para o banco de dados dedicado do prejeto 3 Neo Bank. DataBricks",
 				"folder": {
-					"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+					"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 				},
 				"content": {
 					"query": "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'JGldsku4546SDpudxqp56'\n\n-- cria marter key para o banco dedicado",
@@ -189,12 +236,36 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/2 - Carregamento_manual_stp5_poc')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake para uma tabela fisica do pool de SQL dedicado",
+				"folder": {
+					"name": "Stp5 - Scripts Tabela Fisica Databricks P3_da POC"
+				},
+				"content": {
+					"query": "/*Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake\n para uma tabela fisica do pool de SQL dedicado */\n\nCOPY INTO dbo.clientNeoBank (\nRowNumber,\nCustomerId,\nSurname,\nCreditScore,\nGeography,\nGender,\nAge,\nTenure,\nBalance,\nNumOfProducts,\nHasCrCard,\nIsActiveMember,\nEstimatedSalary,\nExited\n)\nFROM 'https://saneobank.blob.core.windows.net/silver/NeoBank_Modelling/NeobankClientsDatabricks.csv' \n\nWITH\n (\n FILE_TYPE = 'CSV',\n FIRSTROW = 2,\n FIELDTERMINATOR =  ',',\n -- as credenciais só são necessarias quando o carregamento vem de outro Storage account\n --CREDENTIAL = (IDENTITY = 'Storage Account Key', SECRET = 'Exemplo de chave_bnGt5m0CeJQ+ASt0gpWVA==')  --usado o acces key da SA\n \n)\nGO\n\nSELECT * FROM dbo.clientNeoBank",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "syndp_neobankpoc",
+						"poolName": "syndp_neobankpoc"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/2 - Credentials_NeoBank_DBricks_stp4_poc')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"folder": {
-					"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+					"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 				},
 				"content": {
 					"query": "CREATE DATABASE SCOPED CREDENTIAL CredencialSaNeoBank\n\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\nSECRET = 'sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-12-31T20:28:57Z&st=2023-06-27T12:28:57Z&spr=https,http&sig=ujo3vS%2BpeSohrz6SVUw1U5cT51xm9%2BY0W9dD9F3S7kM%3D'\n\nGO",
@@ -240,7 +311,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"folder": {
-					"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+					"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 				},
 				"content": {
 					"query": "CREATE EXTERNAL DATA SOURCE ContainerSaneobank  --crie um acesso externo ao datasource (container silver)\n\nWITH(\nLOCATION = 'https://saneobank.blob.core.windows.net/silver',  --endereço do container\nCREDENTIAL = CredencialSaNeoBank  -- nome da credencial criada no script 2-Credencials_NeobanK_DBricks\n\n)\n",
@@ -286,7 +357,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"folder": {
-					"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+					"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 				},
 				"content": {
 					"query": "CREATE EXTERNAL FILE FORMAT formato_csv --nome do script\n\nWITH(\n    FORMAT_TYPE = DELIMITEDTEXT,\n    FORMAT_OPTIONS(\n        FIELD_TERMINATOR = ',',\n        STRING_DELIMITER = '\"',\n        FIRST_ROW = 1,\n        USE_TYPE_DEFAULT = TRUE\n\n    )\n\n)",
@@ -373,63 +444,15 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Carregamento manual')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"description": "Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake para uma tabela fisica do pool de SQL dedicado",
-				"folder": {
-					"name": "Script Tabela Fisica Databricks P3_da POC"
-				},
-				"content": {
-					"query": "/*Esse script foi feito de forma manual para carregamento de um arquivo csv do data lake\n para uma tabela fisica do pool de SQL dedicado */\n\nCOPY INTO dbo.clientNeoBank (\nRowNumber,\nCustomerId,\nSurname,\nCreditScore,\nGeography,\nGender,\nAge,\nTenure,\nBalance,\nNumOfProducts,\nHasCrCard,\nIsActiveMember,\nEstimatedSalary,\nExited\n)\nFROM 'https://saneobank.blob.core.windows.net/silver/NeoBank_Modelling/NeobankClientsDatabricks.csv' \n\nWITH\n (\n FILE_TYPE = 'CSV',\n FIRSTROW = 2,\n FIELDTERMINATOR =  ',',\n -- as credenciais só são necessarias quando o carregamento vem de outro Storage account\n --CREDENTIAL = (IDENTITY = 'Storage Account Key', SECRET = 'Exemplo de chave_bnGt5m0CeJQ+ASt0gpWVA==')  --usado o acces key da SA\n \n)\nGO\n\nSELECT * FROM dbo.clientNeoBank",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "syndp_neobankpoc",
-						"poolName": "syndp_neobankpoc"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/External Table - Complete_stp4_poc')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"folder": {
-					"name": "Stp4-Scripts Tabela Externa DataBricks Neobank"
+					"name": "Stp4 - Scripts Tabela Externa DataBricks Neobank"
 				},
 				"content": {
 					"query": "\n-- Este script é feito automaticamente pelo SA ao encontrar o arquivo no Hub de DATA / Linked e com o botão direito gerar tabela externa\n-- Foi modificado apenas  os nomes das colunas que ele não identificou automaticamente\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t STRING_DELIMITER = '\"',\n\t\t\t FIRST_ROW = 2,\n\t\t\t USE_TYPE_DEFAULT = TRUE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'silver_saneobank_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [silver_saneobank_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://silver@saneobank.dfs.core.windows.net', \n\t\tTYPE = HADOOP \n\t)\nGO\n\nCREATE EXTERNAL TABLE dbo.extClientNeoBank (\n\tRowNumber VARCHAR(100),\n\tCustumerID VARCHAR(100),\n\tSurname VARCHAR(100),\n\tCreditScore VARCHAR(100),\n\tGeography VARCHAR(100),\n\tGender VARCHAR(100),\n\tAge VARCHAR(100),\n\tTenure VARCHAR(100),\n\tBalance VARCHAR(100),\n\tNumOfProducts VARCHAR(100),\n\tHasCrCard VARCHAR(100),\n\tIsActiveMember VARCHAR(100),\n\tEstimatedSalary VARCHAR(100),\n\tExited VARCHAR(100)\n\t)\n\tWITH (\n\tLOCATION = 'NeoBank_Modelling/NeobankClientsDatabricks.csv',\n\tDATA_SOURCE = [silver_saneobank_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.extClientNeoBank\nGO",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "syndp_neobankpoc",
-						"poolName": "syndp_neobankpoc"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQL Create Table')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"description": "Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL",
-				"folder": {
-					"name": "Script Tabela Fisica Databricks P3_da POC"
-				},
-				"content": {
-					"query": "/*Esse script é para criação da tabela fisica no pool de SQL dedicado.\nScript do projeto 3:\nPopular o DW com os dados limpos pelo DataBricks e que esta no DL */\n\nCREATE TABLE clientNeoBank (\n\tRowNumber VARCHAR(100),\n\tCustomerId VARCHAR(100),\n\tSurname VARCHAR(100),\n\tCreditScore VARCHAR(100),\n\tGeography VARCHAR(100),\n\tGender VARCHAR(100),\n\tAge VARCHAR(100),\n\tTenure VARCHAR(100),\n\tBalance VARCHAR(100),\n\tNumOfProducts VARCHAR(100),\n\tHasCrCard VARCHAR(100),\n\tIsActiveMember VARCHAR(100),\n\tEstimatedSalary VARCHAR(100),\n\tExited VARCHAR(100)\n\n)\nWITH (\n    DISTRIBUTION = HASH (CustomerId), -- a distribuição é HASH\n    CLUSTERED COLUMNSTORE INDEX  -- o indice é COLUMNSTORE\n)",
 					"metadata": {
 						"language": "sql"
 					},

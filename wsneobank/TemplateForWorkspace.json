@@ -94,7 +94,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/0 - INF_SCRIPTS_step2_poc')]",
+			"name": "[concat(parameters('workspaceName'), '/0 - INF_SCRIPTS_stp2_poc')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {

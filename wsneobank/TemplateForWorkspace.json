@@ -257,10 +257,11 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/INF_SCRIPTS')]",
+			"name": "[concat(parameters('workspaceName'), '/INF_SCRIPTS_STEP2_POC')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"description": "2) - Criar tabela externas no Pool serverless usando polybase para apontar para os arquivos que estao no data lake",
 				"folder": {
 					"name": "Scripts NeoBank P3_M5 - Step2 da POC"
 				},

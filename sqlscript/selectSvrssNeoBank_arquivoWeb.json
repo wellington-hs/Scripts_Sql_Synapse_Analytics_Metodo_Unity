@@ -1,11 +1,11 @@
 {
-	"name": "selectSvrssNeoBank",
+	"name": "selectSvrssNeoBank_arquivoWeb",
 	"properties": {
 		"folder": {
-			"name": "1 - Selects Modulo4 - Pool SQL Sem Servico"
+			"name": "100 - Selects Modulo4 - Pool SQL Sem Servico - (Não faz parte da poc)"
 		},
 		"content": {
-			"query": "\n -- Esta é uma consulta de um arquivo csv externo publico, utilizando o SQL interno sem serviço \n -- com o BD SERVERLESS criado posteriormente chamado \"bdsrvssNeoBank\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\nwhere geo_id = 'BR'\n\n",
+			"query": "\n --Pratica Smart (não faz parte da POC)\n -- Esta é uma consulta de um arquivo csv externo publico, utilizando o SQL interno sem serviço \n -- com o BD SERVERLESS criado posteriormente no banco de dados serverless \"bdsrvssNeoBank\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\nwhere geo_id = 'BR'\n\n",
 			"metadata": {
 				"language": "sql"
 			},

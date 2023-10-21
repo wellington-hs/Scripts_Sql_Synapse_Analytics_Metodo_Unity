@@ -1,11 +1,11 @@
 {
-	"name": "selectPoolSemServicoPadrao",
+	"name": "selectPoolServerless_arquivoWeb",
 	"properties": {
 		"folder": {
-			"name": "1 - Selects Modulo4 - Pool SQL Sem Servico"
+			"name": "100 - Selects Modulo4 - Pool SQL Sem Servico - (Não faz parte da poc)"
 		},
 		"content": {
-			"query": "-- Prática Smart 1 : Pool de SQL sem serviço (Criar e codar no Pool serveless)\n-- Esta é uma consulta de um arquivo csv externo publico diponibilizado no data lake da microsoft, utilizando o SQL interno sem serviço com o BD padrao \"master\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\n\n\n\n    ",
+			"query": "-- Não faz parte da POC\n\n-- Prática Smart 1 : Pool de SQL sem serviço (Criar e codar no Pool serveless) \n-- Esta é uma consulta de um arquivo csv externo publico diponibilizado no data lake da microsoft, utilizando o SQL interno sem serviço com o BD padrao \"master\"\n\nSELECT\n*\nFROM OPENROWSET(\nBULK 'https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv',\nFORMAT = 'CSV',\nPARSER_VERSION = '2.0',\nHEADER_ROW = TRUE) as [r]\n\n\n\n\n    ",
 			"metadata": {
 				"language": "sql"
 			},

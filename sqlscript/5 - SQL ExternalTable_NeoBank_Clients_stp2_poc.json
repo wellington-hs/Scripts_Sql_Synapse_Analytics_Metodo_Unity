@@ -2,7 +2,7 @@
 	"name": "5 - SQL ExternalTable_NeoBank_Clients_stp2_poc",
 	"properties": {
 		"folder": {
-			"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+			"name": "Stp2 - Scripts NeoBank P3_M5"
 		},
 		"content": {
 			"query": "\n-- aqui é criado uma tabela externa na mão, definindo o nome da tabela, os campos os tipos de dados e tudo que há no campo WITH.\n\nCREATE EXTERNAL TABLE extNeoBankClient(\nRowNumber INT,\nCustomerId INT,\nSurname VARCHAR(100),\nCreditScore VARCHAR(100),\nGeography VARCHAR(100),\nGender VARCHAR(100),\nAge VARCHAR(100),\nTenure VARCHAR(100),\nBalance VARCHAR(100),\nNumOfProducts VARCHAR(100),\nHasCrCard VARCHAR(100),\nIsActiveMember VARCHAR(100),\nEstimatedSalary VARCHAR(100),\nExited VARCHAR(100)\n)\nWITH(\n    LOCATION = 'NeoBank_Modelling.csv',\n    DATA_SOURCE = DS_NEOBANKbronze,\n    FILE_FORMAT = formato_CSV\n)",

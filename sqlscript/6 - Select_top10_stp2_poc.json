@@ -2,7 +2,7 @@
 	"name": "6 - Select_top10_stp2_poc",
 	"properties": {
 		"folder": {
-			"name": "Scripts NeoBank P3_M5 - Step2 da POC"
+			"name": "Stp2 - Scripts NeoBank P3_M5"
 		},
 		"content": {
 			"query": "SELECT TOP (10) [RowNumber]\n,[CustomerId]\n,[Surname]\n,[CreditScore]\n,[Geography]\n,[Gender]\n,[Age]\n,[Tenure]\n,[Balance]\n,[NumOfProducts]\n,[HasCrCard]\n,[IsActiveMember]\n,[EstimatedSalary]\n,[Exited]\n FROM [dbo].[extNeoBankClient]",
